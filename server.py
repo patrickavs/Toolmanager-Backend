@@ -21,7 +21,7 @@ def get_all_tools():
 
 
 # Getting a specific tool
-@app.route("/tools/<int:tool_id>", methods=["GET"])
+@app.route("/tools/<tool_id>", methods=["GET"])
 def get_tool(tool_id):
     tool = tool_service.get_tool(tool_id)
     if tool is None:
@@ -40,7 +40,7 @@ def add_tool():
 
 
 # Updating a tool
-@app.route("/tools/<int:tool_id>", methods=["PUT"])
+@app.route("/tools/<tool_id>", methods=["PUT"])
 def update_tool(tool_id):
     data = request.get_json()
     if not data:
@@ -52,7 +52,7 @@ def update_tool(tool_id):
 
 
 # Deleting a tool
-@app.route("/tools/<int:tool_id>", methods=["DELETE"])
+@app.route("/tools/<tool_id>", methods=["DELETE"])
 def delete_tool(tool_id):
     deleted_count = tool_service.delete_tool(tool_id)
     if deleted_count == 0:
