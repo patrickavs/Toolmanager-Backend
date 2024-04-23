@@ -19,14 +19,14 @@ material_service = MaterialService(materialCollection)
 
 
 # Listing all tools
-@app.route("/tools", methods=["GET"])
+@app.get("/tools")
 def get_all_tools():
     tools = tool_service.get_all_tools()
     return jsonify(tools)
 
 
 # Getting a specific tool
-@app.route("/tools/<tool_id>", methods=["GET"])
+@app.get("/tools/<tool_id>")
 def get_tool(tool_id):
     tool = tool_service.get_tool(tool_id)
     if tool is None:
@@ -35,7 +35,7 @@ def get_tool(tool_id):
 
 
 # Adding a new tool
-@app.route("/tools", methods=["POST"])
+@app.post("/tools")
 def add_tool():
     data = request.get_json()
     if not data:
@@ -45,7 +45,7 @@ def add_tool():
 
 
 # Updating a tool
-@app.route("/tools/<tool_id>", methods=["PUT"])
+@app.put("/tools/<tool_id>")
 def update_tool(tool_id):
     data = request.get_json()
     if not data:
@@ -57,7 +57,7 @@ def update_tool(tool_id):
 
 
 # Deleting a tool
-@app.route("/tools/<tool_id>", methods=["DELETE"])
+@app.delete("/tools/<tool_id>")
 def delete_tool(tool_id):
     deleted_count = tool_service.delete_tool(tool_id)
     if deleted_count == 0:
@@ -69,14 +69,14 @@ def delete_tool(tool_id):
 
 
 # Listing all materials
-@app.route("/materials", methods=["GET"])
+@app.get("/materials")
 def get_all_materials():
     materials = material_service.get_all_materials()
     return jsonify(materials)
 
 
 # Getting a specific material
-@app.route("/materials/<material_id>", methods=["GET"])
+@app.get("/materials/<material_id>")
 def get_material(material_id):
     material = material_service.get_material(material_id)
     if material is None:
@@ -85,7 +85,7 @@ def get_material(material_id):
 
 
 # Adding a new material
-@app.route("/materials", methods=["POST"])
+@app.post("/materials")
 def add_material():
     data = request.get_json()
     if not data:
@@ -95,7 +95,7 @@ def add_material():
 
 
 # Updating a material
-@app.route("/materials/<material_id>", methods=["PUT"])
+@app.put("/materials/<material_id>")
 def update_material(material_id):
     data = request.get_json()
     if not data:
@@ -107,7 +107,7 @@ def update_material(material_id):
 
 
 # Deleting a material
-@app.route("/materials/<material_id>", methods=["DELETE"])
+@app.delete("/materials/<material_id>")
 def delete_material(material_id):
     deleted_count = material_service.delete_material(material_id)
     if deleted_count == 0:
