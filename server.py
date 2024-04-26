@@ -65,6 +65,12 @@ def delete_tool(tool_id):
     return jsonify({"message": "Tool deleted"})
 
 
+@app.get("/tools/<tool_id>/materials")
+def get_materials_for_tool(tool_id):
+    materials_for_tool = tool_service.get_materials_for_tool(tool_id)
+    return jsonify({"materials_for_tool": materials_for_tool})
+
+
 ## Materials ##
 
 
@@ -113,6 +119,12 @@ def delete_material(material_id):
     if deleted_count == 0:
         return jsonify({"message": "Material not found"}), 404
     return jsonify({"message": "Material deleted"})
+
+
+@app.get("/materials/<material_id>/tools")
+def get_tools_for_material(material_id):
+    tools_for_material = material_service.get_tools_for_material(material_id)
+    return jsonify({"tools_for_material": tools_for_material})
 
 
 if __name__ == "__main__":
