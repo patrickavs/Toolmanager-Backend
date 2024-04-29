@@ -73,10 +73,16 @@ def get_materials_for_tool(tool_id):
     if not tool:
         return []
 
-    materials = tool.get("materials", [])
+    material_ids = tool.get("materials", [])
 
-    if not materials:
+    if not material_ids:
         return []
+
+    materials = []
+    for material_id in material_ids:
+        material = material_service.get_material(material_id)
+        if material:
+            materials.append(material)
 
     return jsonify({f"materials for {tool['name']}:": materials})
 
@@ -134,14 +140,21 @@ def delete_material(material_id):
 @app.get("/materials/<material_id>/tools")
 def get_tools_for_material(material_id):
     filter = {"_id": material_id}
-    material = toolCollection.find_one(filter)
+    material = materialCollection.find_one(filter)
 
     if not material:
         return []
 
-    tools = material.get("tools", [])
-    if not tools:
+    tool_ids = material.get("tools", [])
+
+    if not tool_ids:
         return []
+
+    tools = []
+    for tool_id in tool_ids:
+        tool = tool_service.get_tool(tool_id)
+        if tool:
+            tools.append(tool)
 
     return jsonify({f"tools for {material['name']}": tools})
 
