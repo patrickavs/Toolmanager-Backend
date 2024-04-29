@@ -1,5 +1,4 @@
 from pymongo.errors import DuplicateKeyError
-from materialService import MaterialService
 
 
 class ToolService:
@@ -33,21 +32,3 @@ class ToolService:
         filter = {"_id": tool_id}
         deleted_count = self.collection.delete_one(filter).deleted_count
         return deleted_count
-
-    def get_materials_for_tool(self, tool_id):
-        filter = {"_id": tool_id}
-        tool = self.collection.find_one(filter)
-        if not tool:
-            return []
-
-        material_ids = tool.get("materials", [])
-
-        if not material_ids:
-            return []
-
-        materials = []
-        for material_id in material_ids:
-            material = MaterialService.get_material(material_id)
-            if material:
-                materials.append(material)
-        return materials

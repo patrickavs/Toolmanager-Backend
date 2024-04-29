@@ -67,8 +67,18 @@ def delete_tool(tool_id):
 
 @app.get("/tools/<tool_id>/materials")
 def get_materials_for_tool(tool_id):
-    materials_for_tool = tool_service.get_materials_for_tool(tool_id)
-    return jsonify({"materials_for_tool": materials_for_tool})
+    filter = {"_id": tool_id}
+    tool = toolCollection.find_one(filter)
+
+    if not tool:
+        return []
+
+    materials = tool.get("materials", [])
+
+    if not materials:
+        return []
+
+    return jsonify({f"materials for {tool['name']}:": materials})
 
 
 ## Materials ##
@@ -123,8 +133,17 @@ def delete_material(material_id):
 
 @app.get("/materials/<material_id>/tools")
 def get_tools_for_material(material_id):
-    tools_for_material = material_service.get_tools_for_material(material_id)
-    return jsonify({"tools_for_material": tools_for_material})
+    filter = {"_id": material_id}
+    material = toolCollection.find_one(filter)
+
+    if not material:
+        return []
+
+    tools = material.get("tools", [])
+    if not tools:
+        return []
+
+    return jsonify({f"tools for {material['name']}": tools})
 
 
 if __name__ == "__main__":
