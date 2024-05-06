@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from toolService import ToolService
 from materialService import MaterialService
 
+from bson import ObjectId
+
 app = Flask(__name__)
 
 # Configure MongoDB
@@ -67,24 +69,28 @@ def delete_tool(tool_id):
 
 @app.get("/tools/<tool_id>/materials")
 def get_materials_for_tool(tool_id):
-    filter = {"_id": tool_id}
-    tool = toolCollection.find_one(filter)
+    try:
+        object_id = ObjectId(tool_id)
+        filter = {"_id": object_id}
+        tool = toolCollection.find_one(filter)
 
-    if not tool:
-        return []
+        if not tool:
+            return [], 404
 
-    material_ids = tool.get("materials", [])
+        material_ids = tool.get("materials", [])
 
-    if not material_ids:
-        return []
+        if not material_ids:
+            return []
 
-    materials = []
-    for material_id in material_ids:
-        material = material_service.get_material(material_id)
-        if material:
-            materials.append(material)
+        materials = []
+        for material_id in material_ids:
+            material = material_service.get_material(material_id)
+            if material:
+                materials.append(material)
 
-    return jsonify({f"materials for {tool['name']}:": materials})
+        return jsonify({f"materials for {tool['name']}:": materials})
+    except (TypeError, ValueError):
+        return jsonify({"message": "Invalid tool id"}), 400
 
 
 ## Materials ##
@@ -139,24 +145,28 @@ def delete_material(material_id):
 
 @app.get("/materials/<material_id>/tools")
 def get_tools_for_material(material_id):
-    filter = {"_id": material_id}
-    material = materialCollection.find_one(filter)
+    try:
+        object_id = ObjectId(material_id)
+        filter = {"_id": object_id}
+        material = materialCollection.find_one(filter)
 
-    if not material:
-        return []
+        if not material:
+            return [], 404
 
-    tool_ids = material.get("tools", [])
+        tool_ids = material.get("tools", [])
 
-    if not tool_ids:
-        return []
+        if not tool_ids:
+            return []
 
-    tools = []
-    for tool_id in tool_ids:
-        tool = tool_service.get_tool(tool_id)
-        if tool:
-            tools.append(tool)
+        tools = []
+        for tool_id in tool_ids:
+            tool = tool_service.get_tool(tool_id)
+            if tool:
+                tools.append(tool)
 
-    return jsonify({f"tools for {material['name']}": tools})
+        return jsonify({f"tools for {material['name']}": tools})
+    except (TypeError, ValueError):
+        return jsonify({"message": "Invalid tool id"}), 400
 
 
 if __name__ == "__main__":
