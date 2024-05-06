@@ -84,7 +84,9 @@ def get_materials_for_tool(tool_id):
 
         materials = []
         for material_id in material_ids:
-            material = material_service.get_material(material_id)
+            material = material_service.get_material(
+                str(material_id)
+            )  # Convert ObjectId to string before fetching material
             if material:
                 materials.append(material)
 
@@ -160,7 +162,9 @@ def get_tools_for_material(material_id):
 
         tools = []
         for tool_id in tool_ids:
-            tool = tool_service.get_tool(tool_id)
+            tool = tool_service.get_tool(
+                str(tool_id)
+            )  # Convert ObjectId to string before fetching tool
             if tool:
                 tools.append(tool)
 
