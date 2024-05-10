@@ -31,7 +31,7 @@ class ToolService:
     def add_tool(self, data):
         try:
             inserted_id = self.collection.insert_one(data).inserted_id
-            return str(inserted_id)
+            return inserted_id
         except DuplicateKeyError:
             return None, 409
 
