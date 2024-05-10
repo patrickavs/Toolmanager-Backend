@@ -8,23 +8,12 @@ class ToolService:
         self.collection = collection
 
     def get_all_tools(self):
-        tools = list(self.collection.find())
-        for tool in tools:
-            tool["_id"] = str(tool["_id"])
-
-            for i, material_id in enumerate(tool["materials"]):
-                if isinstance(material_id, ObjectId):
-                    tool["materials"][i] = str(material_id)
-        return tools
+        return list(self.collection.find())
 
     def get_tool(self, tool_id):
         try:
-            object_id = ObjectId(tool_id)
-            filter = {"_id": object_id}
-            tool = self.collection.find_one(filter)
-            if tool:
-                tool["_id"] = str(tool["_id"])
-            return tool
+            filter = {"_id": tool_id}
+            return self.collection.find_one(filter)
         except (TypeError, ValueError):
             return None, 400
 
@@ -37,8 +26,7 @@ class ToolService:
 
     def update_tool(self, tool_id, data):
         try:
-            object_id = ObjectId(tool_id)
-            filter = {"_id": object_id}
+            filter = {"_id": tool_id}
             update = {"$set": data}
             updated_count = self.collection.update_one(filter, update).matched_count
             if updated_count == 0:
@@ -49,8 +37,7 @@ class ToolService:
 
     def delete_tool(self, tool_id):
         try:
-            object_id = ObjectId(tool_id)
-            filter = {"_id": object_id}
+            filter = {"_id": tool_id}
             deleted_count = self.collection.delete_one(filter).deleted_count
             return deleted_count
         except (TypeError, ValueError):

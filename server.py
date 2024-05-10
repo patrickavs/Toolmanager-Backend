@@ -70,8 +70,7 @@ def delete_tool(tool_id):
 @app.get("/tools/<tool_id>/materials")
 def get_materials_for_tool(tool_id):
     try:
-        object_id = ObjectId(tool_id)
-        filter = {"_id": object_id}
+        filter = {"_id": tool_id}
         tool = toolCollection.find_one(filter)
 
         if not tool:
@@ -84,9 +83,7 @@ def get_materials_for_tool(tool_id):
 
         materials = []
         for material_id in material_ids:
-            material = material_service.get_material(
-                str(material_id)
-            )  # Convert ObjectId to string before fetching material
+            material = material_service.get_material(material_id)
             if material:
                 materials.append(material)
 
@@ -148,8 +145,7 @@ def delete_material(material_id):
 @app.get("/materials/<material_id>/tools")
 def get_tools_for_material(material_id):
     try:
-        object_id = ObjectId(material_id)
-        filter = {"_id": object_id}
+        filter = {"_id": material_id}
         material = materialCollection.find_one(filter)
 
         if not material:
@@ -162,9 +158,7 @@ def get_tools_for_material(material_id):
 
         tools = []
         for tool_id in tool_ids:
-            tool = tool_service.get_tool(
-                str(tool_id)
-            )  # Convert ObjectId to string before fetching tool
+            tool = tool_service.get_tool(tool_id)
             if tool:
                 tools.append(tool)
 
