@@ -67,6 +67,7 @@ def delete_tool(tool_id):
     return jsonify({"message": "Tool deleted"})
 
 
+# Get materials for a tool
 @app.get("/tools/<tool_id>/materials")
 def get_materials_for_tool(tool_id):
     try:
@@ -142,6 +143,7 @@ def delete_material(material_id):
     return jsonify({"message": "Material deleted"})
 
 
+# Get tools for a material
 @app.get("/materials/<material_id>/tools")
 def get_tools_for_material(material_id):
     try:
