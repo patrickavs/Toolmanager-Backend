@@ -193,7 +193,7 @@ def get_user(user_id):
 
 # Adding a new user
 @app.post("/users")
-def add_material():
+def add_user():
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
