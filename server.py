@@ -3,6 +3,7 @@ from pymongo import MongoClient
 
 from toolService import ToolService
 from materialService import MaterialService
+from userService import UserService
 
 from bson import ObjectId
 
@@ -13,9 +14,11 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["toolmanagerDB"]
 toolCollection = db["tools"]
 materialCollection = db["materials"]
+userCollection = db["users"]
 
 tool_service = ToolService(toolCollection)
 material_service = MaterialService(materialCollection)
+user_service = UserService(userCollection)
 
 ## Tools ##
 
@@ -131,7 +134,7 @@ def update_material(material_id):
     updated_material = material_service.update_material(material_id, data)
     if updated_material is None:
         return jsonify({"message": "Material not found"}), 404
-    return jsonify(update_material)
+    return jsonify(updated_material)
 
 
 # Deleting a material
@@ -167,6 +170,56 @@ def get_tools_for_material(material_id):
         return jsonify({f"tools for {material['name']}": tools})
     except (TypeError, ValueError):
         return jsonify({"message": "Invalid tool id"}), 400
+
+
+## User ##
+
+
+# Listing all users
+@app.get("/users")
+def get_all_users():
+    users = user_service.get_all_users()
+    return jsonify(users)
+
+
+# Getting a specific user
+@app.get("/users/<user_id>")
+def get_user(user_id):
+    user = user_service.get_user(user_id)
+    if user is None:
+        return jsonify({"message": "User not found"}), 404
+    return jsonify(user)
+
+
+# Adding a new user
+@app.post("/users")
+def add_material():
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing data"}), 400
+    new_user = user_service.add_user(data)
+    return jsonify(new_user), 201
+
+
+# Updating a user
+@app.put("/users/<user_id>")
+def update_user(user_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing data"}), 400
+    updated_user = user_service.update_user(user_id, data)
+    if updated_user is None:
+        return jsonify({"message": "User not found"}), 404
+    return jsonify(updated_user)
+
+
+# Deleting a user
+@app.delete("/users/<user_id>")
+def delete_user(user_id):
+    deleted_count = user_service.delete_user(user_id)
+    if deleted_count == 0:
+        return jsonify({"message": "User not found"}), 404
+    return jsonify({"message": "User deleted"})
 
 
 if __name__ == "__main__":
