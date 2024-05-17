@@ -253,7 +253,7 @@ def login():
     return jsonify({"message": "Invalid credentials"}), 401
 
 
-@app.route("/api/protected", methods=["GET"])
+@app.get("/api/protected")
 @jwt_required()
 def protected():
     current_user = get_jwt_identity()
