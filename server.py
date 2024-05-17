@@ -1,13 +1,19 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from toolService import ToolService
 from materialService import MaterialService
 from userService import UserService
 
-from bson import ObjectId
-
 app = Flask(__name__)
+jwt = JWTManager(app)
 
 # Configure MongoDB
 client = MongoClient("mongodb://localhost:27017/")
@@ -172,7 +178,7 @@ def get_tools_for_material(material_id):
         return jsonify({"message": "Invalid tool id"}), 400
 
 
-## User ##
+## User-Management ##
 
 
 # Listing all users
@@ -220,6 +226,38 @@ def delete_user(user_id):
     if deleted_count == 0:
         return jsonify({"message": "User not found"}), 404
     return jsonify({"message": "User deleted"})
+
+
+## Authentication ##
+
+
+# Register a new user
+@app.post("/api/register")
+def register():
+    data = request.get_json()
+    hashed_password = generate_password_hash(data["password"], method="sha256")
+    userCollection.insert_one(
+        {"name": data["name"], "email": data["email"], "password": hashed_password}
+    )
+    return jsonify({"message": "User registered successfully"}), 201
+
+
+# Login a user
+@app.post("/api/login")
+def login():
+    data = request.get_json()
+    user = userCollection.find_one({"email": data["email"]})
+    if user and check_password_hash(user["password"], data["password"]):
+        token = create_access_token(identity=user["email"])
+        return jsonify({"token": token}), 200
+    return jsonify({"message": "Invalid credentials"}), 401
+
+
+@app.route("/api/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
 
 
 if __name__ == "__main__":
