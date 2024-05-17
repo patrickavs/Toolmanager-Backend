@@ -1,18 +1,28 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from dotenv import load_dotenv
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     jwt_required,
     get_jwt_identity,
+    get_jwt,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from toolService import ToolService
 from materialService import MaterialService
 from userService import UserService
+import os
+from bson import ObjectId
+
+load_dotenv()
+
+# Placeholder for token blacklist
+blacklist = set()
 
 app = Flask(__name__)
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 
 # Configure MongoDB
@@ -231,13 +241,28 @@ def delete_user(user_id):
 ## Authentication ##
 
 
+# JWT Blacklist check
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    return jti in blacklist
+
+
 # Register a new user
 @app.post("/api/register")
 def register():
     data = request.get_json()
-    hashed_password = generate_password_hash(data["password"], method="sha256")
+    hashed_password = generate_password_hash(data["password"])
     userCollection.insert_one(
-        {"name": data["name"], "email": data["email"], "password": hashed_password}
+        {
+            "_id": str(ObjectId()),
+            "name": data["name"],
+            "email": data["email"],
+            "password": hashed_password,
+            "profilePic": "",
+            "aboutMe": "",
+            "bio": "",
+        }
     )
     return jsonify({"message": "User registered successfully"}), 201
 
@@ -251,6 +276,15 @@ def login():
         token = create_access_token(identity=user["email"])
         return jsonify({"token": token}), 200
     return jsonify({"message": "Invalid credentials"}), 401
+
+
+# Logout a user
+@app.post("/api/logout")
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    blacklist.add(jti)
+    return jsonify({"message": "Successfully logged out"}), 200
 
 
 @app.get("/api/protected")
