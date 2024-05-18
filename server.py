@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from datetime import timedelta
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
+    create_refresh_token,
     jwt_required,
     get_jwt_identity,
     get_jwt,
@@ -23,6 +25,8 @@ blacklist = set()
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
 jwt = JWTManager(app)
 
 # Configure MongoDB
@@ -42,17 +46,17 @@ user_service = UserService(userCollection)
 # Listing all tools
 @app.get("/tools")
 def get_all_tools():
-    tools = tool_service.get_all_tools()
-    return jsonify(tools)
+    tools, status = tool_service.get_all_tools()
+    return jsonify(tools), status
 
 
 # Getting a specific tool
 @app.get("/tools/<tool_id>")
 def get_tool(tool_id):
-    tool = tool_service.get_tool(tool_id)
-    if tool is None:
-        return jsonify({"message": "Tool not found"}), 404
-    return jsonify(tool)
+    tool, status = tool_service.get_tool(tool_id)
+    if status != 200:
+        return jsonify(tool), status
+    return jsonify(tool), status
 
 
 # Adding a new tool
@@ -61,8 +65,8 @@ def add_tool():
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    new_tool = tool_service.add_tool(data)
-    return jsonify(new_tool), 201
+    new_tool, status = tool_service.add_tool(data)
+    return jsonify(new_tool), status
 
 
 # Updating a tool
@@ -71,19 +75,15 @@ def update_tool(tool_id):
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    updated_tool = tool_service.update_tool(tool_id, data)
-    if updated_tool is None:
-        return jsonify({"message": "Tool not found"}), 404
-    return jsonify(updated_tool)
+    updated_tool, status = tool_service.update_tool(tool_id, data)
+    return jsonify(updated_tool), status
 
 
 # Deleting a tool
 @app.delete("/tools/<tool_id>")
 def delete_tool(tool_id):
-    deleted_count = tool_service.delete_tool(tool_id)
-    if deleted_count == 0:
-        return jsonify({"message": "Tool not found"}), 404
-    return jsonify({"message": "Tool deleted"})
+    message, status = tool_service.delete_tool(tool_id)
+    return jsonify(message), status
 
 
 # Get materials for a tool
@@ -92,24 +92,15 @@ def get_materials_for_tool(tool_id):
     try:
         filter = {"_id": tool_id}
         tool = toolCollection.find_one(filter)
-
         if not tool:
-            return [], 404
-
+            return jsonify({"message": "Tool not found"}), 404
         material_ids = tool.get("materials", [])
-
-        if not material_ids:
-            return []
-
-        materials = []
-        for material_id in material_ids:
-            material = material_service.get_material(material_id)
-            if material:
-                materials.append(material)
-
-        return jsonify({f"materials for {tool['name']}:": materials})
+        materials = [
+            material_service.get_material(material_id) for material_id in material_ids
+        ]
+        return jsonify({"materials": materials}), 200
     except (TypeError, ValueError):
-        return jsonify({"message": "Invalid tool id"}), 400
+        return jsonify({"message": "Invalid tool ID"}), 400
 
 
 ## Materials ##
@@ -118,17 +109,15 @@ def get_materials_for_tool(tool_id):
 # Listing all materials
 @app.get("/materials")
 def get_all_materials():
-    materials = material_service.get_all_materials()
-    return jsonify(materials)
+    materials, status = material_service.get_all_materials()
+    return jsonify(materials), status
 
 
 # Getting a specific material
 @app.get("/materials/<material_id>")
 def get_material(material_id):
-    material = material_service.get_material(material_id)
-    if material is None:
-        return jsonify({"message": "Material not found"}), 404
-    return jsonify(material)
+    material, status = material_service.get_material(material_id)
+    return jsonify(material), status
 
 
 # Adding a new material
@@ -137,8 +126,8 @@ def add_material():
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    new_material = material_service.add_material(data)
-    return jsonify(new_material), 201
+    new_material, status = material_service.add_material(data)
+    return jsonify(new_material), status
 
 
 # Updating a material
@@ -147,19 +136,15 @@ def update_material(material_id):
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    updated_material = material_service.update_material(material_id, data)
-    if updated_material is None:
-        return jsonify({"message": "Material not found"}), 404
-    return jsonify(updated_material)
+    updated_material, status = material_service.update_material(material_id, data)
+    return jsonify(updated_material), status
 
 
 # Deleting a material
 @app.delete("/materials/<material_id>")
 def delete_material(material_id):
-    deleted_count = material_service.delete_material(material_id)
-    if deleted_count == 0:
-        return jsonify({"message": "Material not found"}), 404
-    return jsonify({"message": "Material deleted"})
+    message, status = material_service.delete_material(material_id)
+    return jsonify(message), status
 
 
 # Get tools for a material
@@ -168,43 +153,30 @@ def get_tools_for_material(material_id):
     try:
         filter = {"_id": material_id}
         material = materialCollection.find_one(filter)
-
         if not material:
-            return [], 404
-
+            return jsonify({"message": "Material not found"}), 404
         tool_ids = material.get("tools", [])
-
-        if not tool_ids:
-            return []
-
-        tools = []
-        for tool_id in tool_ids:
-            tool = tool_service.get_tool(tool_id)
-            if tool:
-                tools.append(tool)
-
-        return jsonify({f"tools for {material['name']}": tools})
+        tools = [tool_service.get_tool(tool_id) for tool_id in tool_ids]
+        return jsonify({"tools": tools}), 200
     except (TypeError, ValueError):
-        return jsonify({"message": "Invalid tool id"}), 400
+        return jsonify({"message": "Invalid material ID"}), 400
 
 
-## User-Management ##
+## User Management ##
 
 
 # Listing all users
 @app.get("/users")
 def get_all_users():
-    users = user_service.get_all_users()
-    return jsonify(users)
+    users, status = user_service.get_all_users()
+    return jsonify(users), status
 
 
 # Getting a specific user
 @app.get("/users/<user_id>")
 def get_user(user_id):
-    user = user_service.get_user(user_id)
-    if user is None:
-        return jsonify({"message": "User not found"}), 404
-    return jsonify(user)
+    user, status = user_service.get_user(user_id)
+    return jsonify(user), status
 
 
 # Adding a new user
@@ -213,8 +185,8 @@ def add_user():
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    new_user = user_service.add_user(data)
-    return jsonify(new_user), 201
+    new_user, status = user_service.add_user(data)
+    return jsonify(new_user), status
 
 
 # Updating a user
@@ -223,19 +195,15 @@ def update_user(user_id):
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    updated_user = user_service.update_user(user_id, data)
-    if updated_user is None:
-        return jsonify({"message": "User not found"}), 404
-    return jsonify(updated_user)
+    updated_user, status = user_service.update_user(user_id, data)
+    return jsonify(updated_user), status
 
 
 # Deleting a user
 @app.delete("/users/<user_id>")
 def delete_user(user_id):
-    deleted_count = user_service.delete_user(user_id)
-    if deleted_count == 0:
-        return jsonify({"message": "User not found"}), 404
-    return jsonify({"message": "User deleted"})
+    message, status = user_service.delete_user(user_id)
+    return jsonify(message), status
 
 
 ## Authentication ##
@@ -253,18 +221,17 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
 def register():
     data = request.get_json()
     hashed_password = generate_password_hash(data["password"])
-    userCollection.insert_one(
-        {
-            "_id": str(ObjectId()),
-            "name": data["name"],
-            "email": data["email"],
-            "password": hashed_password,
-            "profilePic": "",
-            "aboutMe": "",
-            "bio": "",
-        }
-    )
-    return jsonify({"message": "User registered successfully"}), 201
+    user_data = {
+        "_id": str(ObjectId()),
+        "name": data["name"],
+        "email": data["email"],
+        "password": hashed_password,
+        "profilePic": "",
+        "aboutMe": "",
+        "bio": "",
+    }
+    new_user, status = user_service.add_user(user_data)
+    return jsonify(new_user), status
 
 
 # Login a user
@@ -273,9 +240,22 @@ def login():
     data = request.get_json()
     user = userCollection.find_one({"email": data["email"]})
     if user and check_password_hash(user["password"], data["password"]):
-        token = create_access_token(identity=user["email"])
-        return jsonify({"token": token}), 200
+        access_token = create_access_token(identity=user["email"])
+        refresh_token = create_refresh_token(identity=user["email"])
+        return (
+            jsonify({"access_token": access_token, "refresh_token": refresh_token}),
+            200,
+        )
     return jsonify({"message": "Invalid credentials"}), 401
+
+
+# Refresh the access token
+@app.post("/api/refresh")
+@jwt_required(refresh=True)
+def refresh():
+    current_user = get_jwt_identity()
+    access_token = create_access_token(identity=current_user)
+    return jsonify({"access_token": access_token}), 200
 
 
 # Logout a user
