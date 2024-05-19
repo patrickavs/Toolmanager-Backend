@@ -167,6 +167,7 @@ def get_tools_for_material(material_id):
 
 # Listing all users
 @app.get("/users")
+@jwt_required()
 def get_all_users():
     users, status = user_service.get_all_users()
     return jsonify(users), status
@@ -174,6 +175,7 @@ def get_all_users():
 
 # Getting a specific user
 @app.get("/users/<user_id>")
+@jwt_required()
 def get_user(user_id):
     user, status = user_service.get_user(user_id)
     return jsonify(user), status
@@ -181,6 +183,7 @@ def get_user(user_id):
 
 # Adding a new user
 @app.post("/users")
+@jwt_required()
 def add_user():
     data = request.get_json()
     if not data:
@@ -191,6 +194,7 @@ def add_user():
 
 # Updating a user
 @app.put("/users/<user_id>")
+@jwt_required()
 def update_user(user_id):
     data = request.get_json()
     if not data:
@@ -201,6 +205,7 @@ def update_user(user_id):
 
 # Deleting a user
 @app.delete("/users/<user_id>")
+@jwt_required()
 def delete_user(user_id):
     message, status = user_service.delete_user(user_id)
     return jsonify(message), status
