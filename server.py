@@ -173,12 +173,23 @@ def get_all_users():
     return jsonify(users), status
 
 
-# Getting a specific user
+# Getting a specific user or the currently logged-in user
 @app.get("/users/<user_id>")
 @jwt_required()
 def get_user(user_id):
-    user, status = user_service.get_user(user_id)
-    return jsonify(user), status
+    current_user_email = get_jwt_identity()
+
+    if user_id == "me":
+        user = userCollection.find_one({"email": current_user_email}, {"password": 0})
+        if user:
+            return jsonify(user), 200
+        else:
+            return jsonify({"message": "User not found"}), 404
+    else:
+        user, status = user_service.get_user(user_id)
+        if status != 200:
+            return jsonify({"message": "User not found"}), status
+        return jsonify(user), status
 
 
 # Adding a new user
@@ -270,13 +281,6 @@ def logout():
     jti = get_jwt()["jti"]
     blacklist.add(jti)
     return jsonify({"message": "Successfully logged out"}), 200
-
-
-@app.get("/api/protected")
-@jwt_required()
-def protected():
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
 
 
 if __name__ == "__main__":
