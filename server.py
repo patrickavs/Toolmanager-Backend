@@ -269,9 +269,12 @@ def login():
 @app.post("/api/refresh")
 @jwt_required(refresh=True)
 def refresh():
-    current_user = get_jwt_identity()
-    access_token = create_access_token(identity=current_user)
-    return jsonify({"access_token": access_token}), 200
+    try:
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity=current_user)
+        return jsonify({"access_token": access_token}), 200
+    except Exception as e:
+        return jsonify({"message": "Token refresh failed", "error": str(e)}), 401
 
 
 # Logout a user
