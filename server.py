@@ -174,22 +174,13 @@ def get_all_users():
 
 
 # Getting a specific user or the currently logged-in user
-@app.get("/users/<user_id>")
+@app.get("/users/<email>")
 @jwt_required()
-def get_user(user_id):
-    current_user_email = get_jwt_identity()
-
-    if user_id == "me":
-        user = userCollection.find_one({"email": current_user_email}, {"password": 0})
-        if user:
-            return jsonify(user), 200
-        else:
-            return jsonify({"message": "User not found"}), 404
-    else:
-        user, status = user_service.get_user(user_id)
-        if status != 200:
-            return jsonify({"message": "User not found"}), status
-        return jsonify(user), status
+def get_user(email):
+    user, status = user_service.get_user(email)
+    if status != 200:
+        return jsonify({"message": "User not found"}), status
+    return jsonify(user), status
 
 
 # Adding a new user
@@ -245,6 +236,8 @@ def register():
         "profilePic": "",
         "aboutMe": "",
         "bio": "",
+        "tools": [],
+        "materials": [],
     }
     new_user, status = user_service.add_user(user_data)
     return jsonify(new_user), status
