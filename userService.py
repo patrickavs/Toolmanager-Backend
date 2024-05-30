@@ -3,10 +3,10 @@ from pymongo.errors import DuplicateKeyError
 
 class UserService:
 
-    def __init__(self, collection, tool_service, material_service):
+    def __init__(self, collection, toolCollection, materialCollection):
         self.collection = collection
-        self.tool_service = tool_service
-        self.material_service = material_service
+        self.toolCollection = toolCollection
+        self.materialCollection = materialCollection
 
     def get_all_users(self):
         try:
@@ -61,100 +61,28 @@ class UserService:
         except Exception as e:
             return {"message": str(e)}, 500
 
-    def get_all_tools(self, email):
+    def get_all_tools_for_user(self, email):
         try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
+            user = self.get_user(email)
             tool_ids = user.get("tools", [])
             tools = []
             for tool_id in tool_ids:
-                tool, tool_status_code = self.tool_service.get_tool(tool_id)
-                if tool_status_code == 200:
-                    tools.append(tool)
-            return {"tools": tools}, 200
+                tool = self.toolCollection.get_tool(tool_id)
+                tools.append(tool)
+            return {"tools": tools}
         except Exception as e:
+            print("Error getting tools for user")
             return {"message": str(e)}, 500
 
-    def get_all_materials(self, email):
+    def get_all_materials_for_user(self, email):
         try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
+            user = self.get_user(email)
             material_ids = user.get("materials", [])
             materials = []
             for material_id in material_ids:
-                material, material_status_code = self.material_service.get_material(
-                    material_id
-                )
-                if material_status_code == 200:
-                    materials.append(material)
-            return {"materials": materials}, 200
+                material = self.materialCollection.get_material(material_id)
+                materials.append(material)
+            return {"materials": materials}
         except Exception as e:
-            return {"message": str(e)}, 500
-
-    def add_tool_to_user(self, email, tool_id):
-        try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
-            if "tools" not in user:
-                user["tools"] = []
-
-            if tool_id in user["tools"]:
-                return {"message": "Tool already added to the user"}, 409
-
-            user["tools"].append(tool_id)
-            self.update_user(email, {"tools": user["tools"]})
-            return {"message": "Tool added successfully"}, 200
-        except Exception as e:
-            return {"message": str(e)}, 500
-
-    def add_material_to_user(self, email, material_id):
-        try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
-            if "materials" not in user:
-                user["materials"] = []
-
-            if material_id in user["materials"]:
-                return {"message": "Material already added to the user"}, 409
-
-            user["materials"].append(material_id)
-            self.update_user(email, {"materials": user["materials"]})
-            return {"message": "Material added successfully"}, 200
-        except Exception as e:
-            return {"message": str(e)}, 500
-
-    def delete_tool_from_user(self, email, tool_id):
-        try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
-            if "tools" in user and tool_id in user["tools"]:
-                user["tools"].remove(tool_id)
-                self.update_user(email, {"tools": user["tools"]})
-                return {"message": "Tool removed from user successfully"}, 200
-            return {"message": "Tool not found in user's tools"}, 404
-        except Exception as e:
-            return {"message": str(e)}, 500
-
-    def delete_material_from_user(self, email, material_id):
-        try:
-            user, status_code = self.get_user(email)
-            if status_code != 200:
-                return user, status_code
-
-            if "materials" in user and material_id in user["materials"]:
-                user["materials"].remove(material_id)
-                self.update_user(email, {"materials": user["materials"]})
-                return {"message": "Material removed from user successfully"}, 200
-            return {"message": "Material not found in user's materials"}, 404
-        except Exception as e:
+            print("Error getting materials for user")
             return {"message": str(e)}, 500
