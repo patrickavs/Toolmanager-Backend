@@ -44,9 +44,9 @@ user_service = UserService(userCollection, toolCollection, materialCollection)
 
 
 # Listing all tools
-@app.get("/tools/<email>")
-def get_all_tools(email):
-    tools, status = user_service.get_all_tools_for_user(email)
+@app.get("/tools/")
+def get_all_tools():
+    tools, status = tool_service.get_all_tools()
     return jsonify(tools), status
 
 
@@ -107,9 +107,9 @@ def get_materials_for_tool(tool_id):
 
 
 # Listing all materials
-@app.get("/materials/<email>")
-def get_all_materials(email):
-    materials, status = user_service.get_all_materials_for_user(email)
+@app.get("/materials/")
+def get_all_materials():
+    materials, status = material_service.get_all_materials()
     return jsonify(materials), status
 
 
@@ -211,6 +211,22 @@ def update_user(email):
 def delete_user(email):
     message, status = user_service.delete_user(email)
     return jsonify(message), status
+
+
+# Listing all materials
+@app.get("/materials/<email>")
+@jwt_required()
+def get_all_materials_for_user(email):
+    materials, status = user_service.get_all_materials_for_user(email)
+    return jsonify(materials), status
+
+
+# Listing all tools
+@app.get("/tools/<email>")
+@jwt_required()
+def get_all_tools_for_user(email):
+    tools, status = user_service.get_all_tools_for_user(email)
+    return jsonify(tools), status
 
 
 ## Authentication ##
