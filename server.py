@@ -195,13 +195,13 @@ def add_user():
 
 
 # Updating a user
-@app.put("/users/<user_id>")
+@app.put("/users/<email>")
 @jwt_required()
-def update_user(user_id):
+def update_user(email):
     data = request.get_json()
     if not data:
         return jsonify({"message": "Missing data"}), 400
-    updated_user, status = user_service.update_user(user_id, data)
+    updated_user, status = user_service.update_user(email, data)
     return jsonify(updated_user), status
 
 
