@@ -206,10 +206,10 @@ def update_user(email):
 
 
 # Deleting a user
-@app.delete("/users/<user_id>")
+@app.delete("/users/<email>")
 @jwt_required()
-def delete_user(user_id):
-    message, status = user_service.delete_user(user_id)
+def delete_user(email):
+    message, status = user_service.delete_user(email)
     return jsonify(message), status
 
 
