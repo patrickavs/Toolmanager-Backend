@@ -65,6 +65,8 @@ class UserService:
         try:
             user = self.get_user(email)
             tool_ids = user.get("tools", [])
+            if tool_ids is None:
+                return {"tools": []}, 200
             tools = []
             for tool_id in tool_ids:
                 tool = self.toolCollection.get_tool(tool_id)
@@ -78,6 +80,8 @@ class UserService:
         try:
             user = self.get_user(email)
             material_ids = user.get("materials", [])
+            if material_ids is None:
+                return {"materials": []}, 200
             materials = []
             for material_id in material_ids:
                 material = self.materialCollection.get_material(material_id)

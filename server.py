@@ -44,7 +44,7 @@ user_service = UserService(userCollection, toolCollection, materialCollection)
 
 
 # Listing all tools
-@app.get("/tools/")
+@app.get("/tools/all")
 def get_all_tools():
     tools, status = tool_service.get_all_tools()
     return jsonify(tools), status
@@ -107,7 +107,7 @@ def get_materials_for_tool(tool_id):
 
 
 # Listing all materials
-@app.get("/materials/")
+@app.get("/materials/all")
 def get_all_materials():
     materials, status = material_service.get_all_materials()
     return jsonify(materials), status
