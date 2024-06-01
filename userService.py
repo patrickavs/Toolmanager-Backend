@@ -63,30 +63,44 @@ class UserService:
 
     def get_all_tools_for_user(self, email):
         try:
-            user = self.get_user(email)
+            user_response, status_code = self.get_user(email)
+            if status_code != 200:
+                return user_response, status_code
+
+            user = user_response
             tool_ids = user.get("tools", [])
-            if tool_ids is None:
+            if not tool_ids:
                 return {"tools": []}, 200
+
             tools = []
             for tool_id in tool_ids:
-                tool = self.toolCollection.get_tool(tool_id)
-                tools.append(tool)
-            return {"tools": tools}
+                tool = self.toolCollection.find_one({"_id": tool_id})
+                if tool:
+                    tools.append(tool)
+
+            return tools, 200
         except Exception as e:
             print("Error getting tools for user")
             return {"message": str(e)}, 500
 
     def get_all_materials_for_user(self, email):
         try:
-            user = self.get_user(email)
+            user_response, status_code = self.get_user(email)
+            if status_code != 200:
+                return user_response, status_code
+
+            user = user_response
             material_ids = user.get("materials", [])
-            if material_ids is None:
+            if not material_ids:
                 return {"materials": []}, 200
+
             materials = []
             for material_id in material_ids:
-                material = self.materialCollection.get_material(material_id)
-                materials.append(material)
-            return {"materials": materials}
+                material = self.materialCollection.find_one({"_id": material_id})
+                if material:
+                    materials.append(material)
+
+            return materials, 200
         except Exception as e:
             print("Error getting materials for user")
             return {"message": str(e)}, 500

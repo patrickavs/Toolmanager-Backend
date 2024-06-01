@@ -214,7 +214,7 @@ def delete_user(email):
 
 
 # Listing all materials
-@app.get("/materials/<email>")
+@app.get("/users/materials/<email>")
 @jwt_required()
 def get_all_materials_for_user(email):
     materials, status = user_service.get_all_materials_for_user(email)
@@ -222,7 +222,7 @@ def get_all_materials_for_user(email):
 
 
 # Listing all tools
-@app.get("/tools/<email>")
+@app.get("/users/tools/<email>")
 @jwt_required()
 def get_all_tools_for_user(email):
     tools, status = user_service.get_all_tools_for_user(email)
