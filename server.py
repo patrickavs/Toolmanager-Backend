@@ -25,7 +25,7 @@ blacklist = set()
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=3)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=3)
 jwt = JWTManager(app)
 
 # Configure MongoDB
