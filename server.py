@@ -25,8 +25,7 @@ blacklist = set()
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
-app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=3)
 jwt = JWTManager(app)
 
 # Configure MongoDB
@@ -266,24 +265,8 @@ def login():
     user = userCollection.find_one({"email": data["email"]})
     if user and check_password_hash(user["password"], data["password"]):
         access_token = create_access_token(identity=user["email"])
-        refresh_token = create_refresh_token(identity=user["email"])
-        return (
-            jsonify({"access_token": access_token, "refresh_token": refresh_token}),
-            200,
-        )
-    return jsonify({"message": "Invalid credentials"}), 401
-
-
-# Refresh the access token
-@app.post("/api/refresh")
-@jwt_required(refresh=True)
-def refresh():
-    try:
-        current_user = get_jwt_identity()
-        access_token = create_access_token(identity=current_user)
         return jsonify({"access_token": access_token}), 200
-    except Exception as e:
-        return jsonify({"message": "Token refresh failed", "error": str(e)}), 401
+    return jsonify({"message": "Invalid credentials"}), 401
 
 
 # Logout a user
