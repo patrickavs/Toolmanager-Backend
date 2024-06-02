@@ -213,7 +213,7 @@ def delete_user(email):
 
 
 # Listing all materials
-@app.get("/users/materials/<email>")
+@app.get("/users/<email>/materials")
 @jwt_required()
 def get_all_materials_for_user(email):
     materials, status = user_service.get_all_materials_for_user(email)
@@ -221,11 +221,49 @@ def get_all_materials_for_user(email):
 
 
 # Listing all tools
-@app.get("/users/tools/<email>")
+@app.get("/users/<email>/tools")
 @jwt_required()
 def get_all_tools_for_user(email):
     tools, status = user_service.get_all_tools_for_user(email)
     return jsonify(tools), status
+
+
+## Adding tool to user
+@app.post("/users/<email>/tools")
+@jwt_required()
+def add_tool_for_user(email):
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing data"}), 400
+    new_tool, status = user_service.add_tool_for_user(email, data)
+    return jsonify(new_tool), status
+
+
+## Adding material to user
+@app.post("/users/<email>/materials")
+@jwt_required()
+def add_material_for_user(email):
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing data"}), 400
+    new_material, status = user_service.add_material_for_user(email, data)
+    return jsonify(new_material), status
+
+
+## Removing tool from user
+@app.delete("/users/<email>/tools/<tool_id>")
+@jwt_required()
+def remove_tool_from_user(email, tool_id):
+    message, status = user_service.remove_tool_from_user(email, tool_id)
+    return jsonify(message), status
+
+
+## Removing material from user
+@app.delete("/users/<email>/materials/<material_id>")
+@jwt_required()
+def remove_material_from_user(email, material_id):
+    message, status = user_service.remove_material_from_user(email, material_id)
+    return jsonify(message), status
 
 
 ## Authentication ##

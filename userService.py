@@ -104,3 +104,65 @@ class UserService:
         except Exception as e:
             print("Error getting materials for user")
             return {"message": str(e)}, 500
+
+    def add_tool_for_user(self, email, tool_data):
+        try:
+            # Insert tool into tools collection
+            tool_id = tool_data.get("_id")
+
+            # Update user document to include new tool's ID
+            filter = {"email": email}
+            update = {"$addToSet": {"tools": str(tool_id)}}
+            updated_count = self.collection.update_one(filter, update).matched_count
+
+            if updated_count == 0:
+                return {"message": "User not found"}, 404
+
+            return {"tool_id": str(tool_id)}, 201
+        except Exception as e:
+            return {"message": str(e)}, 500
+
+    def add_material_for_user(self, email, material_data):
+        try:
+            # Insert material into materials collection
+            material_id = material_data.get("_id")
+
+            # Update user document to include new material's ID
+            filter = {"email": email}
+            update = {"$addToSet": {"materials": str(material_id)}}
+            updated_count = self.collection.update_one(filter, update).matched_count
+
+            if updated_count == 0:
+                return {"message": "User not found"}, 404
+
+            return {"material_id": str(material_id)}, 201
+        except Exception as e:
+            return {"message": str(e)}, 500
+
+    def remove_tool_from_user(self, email, tool_id):
+        try:
+            # Remove the tool's ID from the user's document
+            filter = {"email": email}
+            update = {"$pull": {"tools": tool_id}}
+            updated_count = self.collection.update_one(filter, update).matched_count
+
+            if updated_count == 0:
+                return {"message": "User not found"}, 404
+
+            return {"message": "Tool removed from user"}, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+
+    def remove_material_from_user(self, email, material_id):
+        try:
+            # Remove the material's ID from the user's document
+            filter = {"email": email}
+            update = {"$pull": {"materials": material_id}}
+            updated_count = self.collection.update_one(filter, update).matched_count
+
+            if updated_count == 0:
+                return {"message": "User not found"}, 404
+
+            return {"message": "Material removed from user"}, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
