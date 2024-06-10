@@ -166,7 +166,6 @@ def get_tools_for_material(material_id):
 
 # Listing all users
 @app.get("/users")
-@jwt_required()
 def get_all_users():
     users, status = user_service.get_all_users()
     return jsonify(users), status
