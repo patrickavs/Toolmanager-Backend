@@ -18,6 +18,7 @@ from userService import UserService
 import os
 from bson import ObjectId
 
+# Load .env variables
 load_dotenv()
 
 # Placeholder for token blacklist
@@ -227,7 +228,7 @@ def get_all_tools_for_user(email):
     return jsonify(tools), status
 
 
-## Adding tool to user
+# Add tool to user
 @app.post("/users/<email>/tools")
 @jwt_required()
 def add_tool_for_user(email):
@@ -238,7 +239,7 @@ def add_tool_for_user(email):
     return jsonify(new_tool), status
 
 
-## Adding material to user
+# Add material to user
 @app.post("/users/<email>/materials")
 @jwt_required()
 def add_material_for_user(email):
@@ -249,7 +250,7 @@ def add_material_for_user(email):
     return jsonify(new_material), status
 
 
-## Removing tool from user
+# Remove tool from user
 @app.delete("/users/<email>/tools/<tool_id>")
 @jwt_required()
 def remove_tool_from_user(email, tool_id):
@@ -257,7 +258,7 @@ def remove_tool_from_user(email, tool_id):
     return jsonify(message), status
 
 
-## Removing material from user
+# Remove material from user
 @app.delete("/users/<email>/materials/<material_id>")
 @jwt_required()
 def remove_material_from_user(email, material_id):
@@ -268,7 +269,7 @@ def remove_material_from_user(email, material_id):
 ## Authentication ##
 
 
-# JWT Blacklist check
+# Check if JWT-Token wasn't already in use
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
